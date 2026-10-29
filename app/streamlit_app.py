@@ -1,8 +1,20 @@
 
 import requests
 import streamlit as st
+import os
 
-API_BASE_URL = "http://127.0.0.1:8000"
+try:
+    API_BASE_URL = st.secrets.get(
+        "API_BASE_URL",
+        os.getenv("API_BASE_URL", "http://127.0.0.1:8000"),
+    ).rstrip("/")
+except (FileNotFoundError, AttributeError):
+    API_BASE_URL = os.getenv(
+        "API_BASE_URL",
+        "http://127.0.0.1:8000",
+    ).rstrip("/")
+
+#API_BASE_URL = "http://127.0.0.1:8000"
 
 LANGUAGES = {
     "English": "en",

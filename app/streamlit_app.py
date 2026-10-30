@@ -3,6 +3,12 @@ import requests
 import streamlit as st
 import os
 
+import json
+from pathlib import Path
+import streamlit.components.v1 as components
+
+from app.services.keyboard_service import KEYBOARD_LAYOUTS
+
 try:
     API_BASE_URL = st.secrets.get(
         "API_BASE_URL",
@@ -154,7 +160,7 @@ with st.sidebar:
 
     st.radio(
         "WORKSPACE",
-        ["AI Chat", "Translation Studio"],
+        ["AI Chat", "Translation Studio", "Smart Typing"],
         key="page",
         label_visibility="visible",
     )
@@ -172,11 +178,19 @@ with st.sidebar:
             use_container_width=True,
             on_click=clear_chat,
         )
-    else:
+    elif st.session_state.page == "Translation Studio":
         st.button(
             "Clear translation",
             use_container_width=True,
             on_click=clear_translation,
+        )
+    else:
+        st.markdown(
+            '<p class="app-subtitle">'
+            'Translate your own text or bring in the latest AI response. '
+            'Your translation stays separate from the chat.'
+            '</p>',
+            unsafe_allow_html=True,
         )
 
 # ---------- Main page ----------
@@ -224,8 +238,7 @@ if st.session_state.page == "AI Chat":
                     language = data["detected_language"]
 
                     st.markdown(answer)
-                    st.caption(f"Detected language: {language}")
-
+                    
                     st.session_state.messages.append(
                         {
                             "role": "assistant",
@@ -365,6 +378,342 @@ else:
             mime="text/plain",
         )
 
+    
+    # ---------- Smart Typing workspace ----------
+
+    else:
+
+        st.markdown(
+            '<p class="app-subtitle">'
+            'Type in Indian languages using English phonetics '
+            'or a virtual regional keyboard.'
+            '</p>',
+            unsafe_allow_html=True,
+        )
+
+        st.subheader("🌍 Smart Typing Studio")
+
+        language = st.selectbox(
+            "Select your language",
+            ["Tamil", "Hindi", "Telugu", "Malayalam"],
+            key="smart_typing_language"
+        )
+
+        script_codes = {
+            "Tamil": "tamil",
+            "Hindi": "devanagari",
+            "Telugu": "telugu",
+            "Malayalam": "malayalam"
+        }
+
+        script = script_codes[language]
+
+        js_path = (
+            Path(__file__).resolve().parent
+            / "static"
+            / "js"
+            / "indic-transliterate.js"
+        )
+
+        if not js_path.exists():
+
+            st.error(
+                "JavaScript transliteration library not found. "
+                "Check static/js/indic-transliterate.js"
+            )
+
+        else:
+
+            js_source = js_path.read_text(encoding="utf-8")
+
+            keyboard_json = json.dumps(
+                KEYBOARD_LAYOUTS,
+                ensure_ascii=False
+            )
+
+        html = r"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+        <meta charset="UTF-8">
+
+        <style>
+        body {
+            background: #171b25;
+            color: white;
+            font-family: Arial;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 90px;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #343c4d;
+            background: #191e29;
+            color: white;
+            font-size: 18px;
+            box-sizing: border-box;
+        }
+
+        .output {
+            padding: 15px;
+            background: #242b39;
+            border-radius: 8px;
+            font-size: 26px;
+            min-height: 45px;
+            overflow-wrap: anywhere;
+        }
+
+        .keyboard {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+            margin: 12px 0;
+        }
+
+        button {
+            padding: 10px 14px;
+            border: none;
+            border-radius: 7px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .key {
+            background: #343c4d;
+            color: white;
+        }
+
+        .action {
+            background: #2563eb;
+            color: white;
+            font-size: 14px;
+        }
+
+        .row {
+            margin-bottom: 8px;
+        }
+        </style>
+        </head>
+
+        <body>
+
+        <h3>1. Phonetic Typing</h3>
+
+        <textarea id="roman"
+        placeholder="Type English letters, e.g. vaNakkam"></textarea>
+
+        <h3>Live Transliteration</h3>
+
+        <div class="output" id="preview"></div>
+
+        <div id="suggestions" class="keyboard"></div>
+
+        <button class="action" id="add">
+        Add to final text
+        </button>
+
+        <hr>
+
+        <h3>2. Virtual Keyboard</h3>
+
+        <div id="keyboard"></div>
+
+        <div class="keyboard">
+            <button class="key" id="space">Space</button>
+            <button class="key" id="backspace">⌫</button>
+            <button class="key" id="clear">Clear</button>
+        </div>
+
+        <h3>3. Final Text</h3>
+
+        <textarea id="finalText"
+        placeholder="Your regional-language text"></textarea>
+
+        <br><br>
+
+        <button class="action" id="copy">
+        Copy Text
+        </button>
+
+        <p id="status"></p>
+
+        <script>
+        __JS_SOURCE__
+        </script>
+
+        <script>
+
+        const layouts = __KEYBOARD_DATA__;
+
+        const script = "__SCRIPT__";
+
+        const roman = document.getElementById("roman");
+        const preview = document.getElementById("preview");
+        const finalText = document.getElementById("finalText");
+
+        function transliterate() {
+
+            const text = roman.value;
+
+            preview.textContent =
+                IndicTransliterate.transliterate(text, script);
+
+            const suggestions =
+                document.getElementById("suggestions");
+
+            suggestions.innerHTML = "";
+
+            const match = text.match(/[A-Za-z]+$/);
+
+            if (!match || match[0].length < 2) return;
+
+            const variants =
+                IndicTransliterate.suggest(match[0], script);
+
+            variants.forEach(item => {
+
+                const button = document.createElement("button");
+
+                button.className = "key";
+                button.textContent = item;
+
+                button.onclick = () => {
+
+                    roman.value =
+                        text.slice(0, text.length - match[0].length)
+                        + item;
+
+                    transliterate();
+                };
+
+                suggestions.appendChild(button);
+            });
+        }
+
+        roman.addEventListener("input", transliterate);
+
+        document.getElementById("add").onclick = () => {
+
+            if (!preview.textContent) return;
+
+            finalText.value +=
+                (finalText.value ? " " : "")
+                + preview.textContent;
+        };
+
+        function renderKeyboard() {
+
+            const container =
+                document.getElementById("keyboard");
+
+            container.innerHTML = "";
+
+            layouts["__LANGUAGE__"].forEach(row => {
+
+                const rowDiv = document.createElement("div");
+
+                rowDiv.className = "keyboard row";
+
+                row.forEach(character => {
+
+                    const button =
+                        document.createElement("button");
+
+                    button.className = "key";
+                    button.textContent = character;
+
+                    button.onclick = () => {
+
+                        const start = finalText.selectionStart;
+                        const end = finalText.selectionEnd;
+
+                        finalText.setRangeText(
+                            character,
+                            start,
+                            end,
+                            "end"
+                        );
+
+                        finalText.focus();
+                    };
+
+                    rowDiv.appendChild(button);
+                });
+
+                container.appendChild(rowDiv);
+            });
+        }
+
+        document.getElementById("space").onclick = () => {
+            finalText.setRangeText(
+                " ",
+                finalText.selectionStart,
+                finalText.selectionEnd,
+                "end"
+            );
+            finalText.focus();
+        };
+
+        document.getElementById("backspace").onclick = () => {
+
+            const start = finalText.selectionStart;
+            const end = finalText.selectionEnd;
+
+            if (start === end && start > 0) {
+                finalText.setRangeText(
+                    "",
+                    start - 1,
+                    end,
+                    "end"
+                );
+            } else {
+                finalText.setRangeText("", start, end, "end");
+            }
+
+            finalText.focus();
+        };
+
+        document.getElementById("clear").onclick = () => {
+            finalText.value = "";
+        };
+
+        document.getElementById("copy").onclick = async () => {
+
+            try {
+                await navigator.clipboard.writeText(finalText.value);
+
+                document.getElementById("status").textContent =
+                    "Text copied successfully!";
+            }
+            catch (error) {
+                finalText.select();
+
+                document.getElementById("status").textContent =
+                    "Press Ctrl+C to copy selected text.";
+            }
+        };
+
+        renderKeyboard();
+
+        </script>
+        </body>
+        </html>
+        """
+
+        html = (
+            html.replace("__JS_SOURCE__", js_source)
+            .replace("__KEYBOARD_DATA__", keyboard_json)
+            .replace("__SCRIPT__", script)
+            .replace("__LANGUAGE__", language)
+        )
+
+        components.html(
+            html,
+            height=1050,
+            scrolling=True
+        )
 st.divider()
 st.caption("Lingua AI · Multilingual chat and translation")
 

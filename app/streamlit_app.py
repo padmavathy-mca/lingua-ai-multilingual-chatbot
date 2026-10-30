@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 import streamlit.components.v1 as components
 
-from app.services.keyboard_service import KEYBOARD_LAYOUTS
+from services.keyboard_service import KEYBOARD_LAYOUTS
 
 try:
     API_BASE_URL = st.secrets.get(
@@ -19,7 +19,7 @@ except (FileNotFoundError, AttributeError):
         "API_BASE_URL",
         "http://127.0.0.1:8000",
     ).rstrip("/")
-
+st.write("Connected API URL:", API_BASE_URL)
 #API_BASE_URL = "http://127.0.0.1:8000"
 
 LANGUAGES = {

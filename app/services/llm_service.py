@@ -33,10 +33,8 @@ def generate_response(user_text: str, language_name: str) -> str:
     api_key = os.getenv("GEMINI_API_KEY")
     model_name = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
 
-    if not api_key or api_key == "your_actual_api_key_here":
-        raise RuntimeError(
-            "Gemini API key is missing. Configure it in the .env file."
-        )
+    if not api_key:
+        raise RuntimeError("Gemini API key is missing.")
 
     client = genai.Client(api_key=api_key)
 
@@ -47,11 +45,10 @@ The user's detected language is {language_name}.
 
 Rules:
 1. Answer entirely in {language_name}, using its native script.
-2. Keep every answer concise, useful, and natural.
-3. Never exceed 100 whitespace-separated words.
-4. Prefer a direct answer and one short example when useful.
-5. Avoid unnecessary introductions, repetition, and long explanations.
-6. Follow the user's request if they explicitly ask for another language.
+2. Keep answers concise, useful, and natural.
+3. Keep answers under 100 words.
+4. Give a direct answer with an example when useful.
+5. Avoid unnecessary introductions.
 """
 
     try:
@@ -61,16 +58,28 @@ Rules:
             config=types.GenerateContentConfig(
                 system_instruction=system_instruction,
                 temperature=0.4,
-                max_output_tokens=180,
+                max_output_tokens=512,
             ),
         )
 
-        if not response.text:
+        # Inspect Gemini's generation status
+        if not response.candidates:
+            raise RuntimeError(
+                f"No Gemini candidates returned: {response.prompt_feedback}"
+            )
+
+        candidate = response.candidates[0]
+
+        print("Gemini finish reason:", candidate.finish_reason)
+        print("Gemini response:", response.text)
+
+        if not response.text or not response.text.strip():
             raise RuntimeError("Gemini returned an empty response.")
 
         return response.text.strip()
 
     except Exception as exc:
+        print("Gemini generation error:", repr(exc))
         raise RuntimeError(
             f"Gemini response generation failed: {exc}"
         ) from exc

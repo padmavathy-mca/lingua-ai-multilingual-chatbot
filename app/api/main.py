@@ -111,27 +111,25 @@ def chat_endpoint(request: TextRequest):
 @app.post("/translate")
 def translate_endpoint(request: TranslationRequest):
     try:
-        translation = translate_text(
-            text=request.text,
-            source_language=request.source_language,
-            target_language=request.target_language,
+        translated_text = translate_text(
+            request.text,
+            request.source_language,
+            request.target_language
         )
 
         return {
-            "source_language": request.source_language,
-            "target_language": request.target_language,
             "original_text": request.text,
-            "translated_text": translation,
+            "translated_text": translated_text,
+            "source_language": request.source_language,
+            "target_language": request.target_language
         }
 
     except ValueError as exc:
-        raise HTTPException(
-            status_code=422,
-            detail=str(exc),
-        ) from exc
+        raise HTTPException(status_code=422, detail=str(exc))
 
     except Exception as exc:
+        print("TRANSLATION ERROR:", repr(exc), flush=True)
         raise HTTPException(
-            status_code=502,
-            detail=f"Translation failed: {exc}",
-        ) from exc
+            status_code=503,
+            detail="Translation service is temporarily unavailable. Please try again later."
+        )v

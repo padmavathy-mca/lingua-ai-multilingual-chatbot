@@ -49,7 +49,7 @@ def generate_response(user_text: str, language_name: str) -> str:
     2. Answer the user's actual question directly.
     3. Provide a complete and informative explanation.
     4. Use simple language and examples where useful.
-    5. Keep answers under 100 words.
+    5. Keep answers under 250 words.
     6. Never return only keywords or an incomplete sentence.
     """
 

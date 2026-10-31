@@ -195,7 +195,9 @@ with st.sidebar:
 
 # ---------- Main page ----------
 st.title("Lingua AI")
+
 if st.session_state.page == "AI Chat":
+
     st.markdown(
         '<p class="app-subtitle">'
         'Chat in your language. Your messages are detected automatically.'
@@ -207,13 +209,16 @@ if st.session_state.page == "AI Chat":
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
+
             if message.get("language"):
-                st.caption(f"Language: {message['language']}")
+                st.caption(f"Detected Language: {message['language']}")
 
     # Chat input
     user_text = st.chat_input("Write a message...")
 
     if user_text:
+
+        # Display user message
         st.session_state.messages.append(
             {"role": "user", "content": user_text}
         )
@@ -221,42 +226,47 @@ if st.session_state.page == "AI Chat":
         with st.chat_message("user"):
             st.markdown(user_text)
 
-        with st.chat_message("assistant"):
-            with st.spinner("Thinking..."):
-                try:
-                    response = requests.post(
-                        f"{API_BASE_URL}/chat",
-                        json={"text": user_text},
-                        timeout=120,
-                    )
-                    response.raise_for_status()
-                    data = response.json()
+        try:
+            with st.spinner("Detecting language..."):
 
-                    answer = " ".join(
-                        data["response"].split()[:100]
-                    )
-                    language = data["detected_language"]
+                # Call FastAPI
+                response = requests.post(
+                    f"{API_BASE_URL}/chat",
+                    json={"text": user_text},
+                    timeout=120,
+                )
 
-                    st.markdown(answer)
-                    
-                    st.session_state.messages.append(
-                        {
-                            "role": "assistant",
-                            "content": answer,
-                            "language": language,
-                        }
-                    )
-                    st.session_state.last_answer = answer
-                    st.session_state.last_language = language
+                response.raise_for_status()
+                data = response.json()
 
-                except requests.RequestException as exc:
-                    show_api_error(
-                        exc,
-                        "Unable to contact the AI service. "
-                        "Check that FastAPI is running.",
-                    )
-                except (KeyError, ValueError):
-                    st.error("The AI service returned an invalid response.")
+            # Extract response data
+            language = data["detected_language"]
+            answer = data["response"]
+
+            # Display detected language BELOW user input
+            st.caption(f"🌐 Detected Language: {language}")
+
+            # Display AI response
+            with st.chat_message("assistant"):
+                st.markdown(answer)
+
+            # Save conversation
+            st.session_state.messages.append(
+                {
+                    "role": "assistant",
+                    "content": answer,
+                    "language": language,
+                }
+            )
+
+            st.session_state.last_answer = answer
+            st.session_state.last_language = language
+
+        except requests.exceptions.RequestException as exc:
+            st.error(f"Unable to contact the AI service: {exc}")
+
+        except (KeyError, ValueError) as exc:
+            st.error(f"Invalid AI service response: {exc}")
 
     # Transfer action is outside the chat response itself
     if st.session_state.last_answer:

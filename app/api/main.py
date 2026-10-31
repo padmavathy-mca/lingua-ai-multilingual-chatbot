@@ -6,6 +6,14 @@ from app.services.language_detector import detect_language
 from app.services.llm_service import generate_response
 from app.services.translation_service import translate_text
 
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    force=True
+)
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="Multilingual AI Chatbot API",
@@ -62,7 +70,7 @@ def detect_language_endpoint(request: TextRequest):
 
 @app.post("/chat")
 def chat_endpoint(request: TextRequest):
-    print("CHAT ENDPOINT REACHED", flush=True)
+    logger.warning("CHAT ENDPOINT REACHED - TEST 12345")
     detection = detect_language(request.text)
 
     if detection["error"]:

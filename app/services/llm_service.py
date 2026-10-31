@@ -19,9 +19,10 @@ SUPPORTED_LANGUAGE_NAMES = {
 }
 
 
+
 def generate_response(user_text: str, language_name: str) -> str:
     """Generate an LLM response in the detected language."""
-    
+
     user_text = user_text.strip()
 
     if not user_text:
@@ -39,17 +40,18 @@ def generate_response(user_text: str, language_name: str) -> str:
     client = genai.Client(api_key=api_key)
 
     system_instruction = f"""
-You are a helpful multilingual AI assistant.
+    You are a helpful multilingual AI assistant.
 
-The user's detected language is {language_name}.
+    The user's detected language is {language_name}.
 
-Rules:
-1. Answer entirely in {language_name}, using its native script.
-2. Keep answers concise, useful, and natural.
-3. Keep answers under 100 words.
-4. Give a direct answer with an example when useful.
-5. Avoid unnecessary introductions.
-"""
+    Rules:
+    1. Answer entirely in {language_name}, using its native script.
+    2. Answer the user's actual question directly.
+    3. Provide a complete and informative explanation.
+    4. Use simple language and examples where useful.
+    5. Keep answers under 100 words.
+    6. Never return only keywords or an incomplete sentence.
+    """
 
     try:
         response = client.models.generate_content(
@@ -58,37 +60,31 @@ Rules:
             config=types.GenerateContentConfig(
                 system_instruction=system_instruction,
                 temperature=0.4,
-                max_output_tokens=512,
+                max_output_tokens=1024,
             ),
         )
-	print("DEBUG: Gemini response received", flush=True)
 
-	print("DEBUG: Finish reason:",
-            response.candidates[0].finish_reason,flush=True)
+        print("Gemini generation completed", flush=True)
+        print("Model:", model_name, flush=True)
 
-	print("DEBUG: Response text:",
-            repr(response.text),flush=True)
-
-        # Inspect Gemini's generation status
-	if not response.candidates:
+        if not response.candidates:
             raise RuntimeError(
-            f"No Gemini candidates returned: {response.prompt_feedback}"
-        )
+                f"No candidates returned: {response.prompt_feedback}"
+            )
 
-	candidate = response.candidates[0]
+        candidate = response.candidates[0]
 
-	print("========== GEMINI DEBUG ==========", flush=True)
-	print("Finish reason:", candidate.finish_reason, flush=True)
-	print("Response text:", repr(response.text), flush=True)
-	print("==================================", flush=True)
+        print("Finish reason:", candidate.finish_reason, flush=True)
+        print("Candidate content:", candidate.content, flush=True)
+        print("Response text:", repr(response.text), flush=True)
 
-	if not response.text or not response.text.strip():
-    		raise RuntimeError("Gemini returned an empty response.")
+        if not response.text or not response.text.strip():
+            raise RuntimeError("Gemini returned an empty response.")
 
-	return response.text.strip()
+        return response.text.strip()
 
     except Exception as exc:
-        print("Gemini generation error:", repr(exc))
-        raise RuntimeError(
-            f"Gemini response generation failed: {exc}"
-        ) from exc
+        print("Gemini generation error:", repr(exc), flush=True)
+        raise
+
+

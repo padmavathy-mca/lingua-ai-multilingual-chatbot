@@ -61,22 +61,31 @@ Rules:
                 max_output_tokens=512,
             ),
         )
+	print("DEBUG: Gemini response received", flush=True)
+
+	print("DEBUG: Finish reason:",
+      		response.candidates[0].finish_reason,flush=True)
+
+	print("DEBUG: Response text:",
+      		repr(response.text),flush=True)
 
         # Inspect Gemini's generation status
-        if not response.candidates:
-            raise RuntimeError(
-                f"No Gemini candidates returned: {response.prompt_feedback}"
-            )
+	if not response.candidates:
+    		raise RuntimeError(
+        	f"No Gemini candidates returned: {response.prompt_feedback}"
+    		)
 
-        candidate = response.candidates[0]
+	candidate = response.candidates[0]
 
-        print("Gemini finish reason:", candidate.finish_reason)
-        print("Gemini response:", response.text)
+	print("========== GEMINI DEBUG ==========", flush=True)
+	print("Finish reason:", candidate.finish_reason, flush=True)
+	print("Response text:", repr(response.text), flush=True)
+	print("==================================", flush=True)
 
-        if not response.text or not response.text.strip():
-            raise RuntimeError("Gemini returned an empty response.")
+	if not response.text or not response.text.strip():
+    		raise RuntimeError("Gemini returned an empty response.")
 
-        return response.text.strip()
+	return response.text.strip()
 
     except Exception as exc:
         print("Gemini generation error:", repr(exc))

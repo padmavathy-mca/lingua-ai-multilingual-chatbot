@@ -21,7 +21,7 @@ SUPPORTED_LANGUAGE_NAMES = {
 
 def generate_response(user_text: str, language_name: str) -> str:
     """Generate an LLM response in the detected language."""
-
+    
     user_text = user_text.strip()
 
     if not user_text:
@@ -64,16 +64,16 @@ Rules:
 	print("DEBUG: Gemini response received", flush=True)
 
 	print("DEBUG: Finish reason:",
-      		response.candidates[0].finish_reason,flush=True)
+            response.candidates[0].finish_reason,flush=True)
 
 	print("DEBUG: Response text:",
-      		repr(response.text),flush=True)
+            repr(response.text),flush=True)
 
         # Inspect Gemini's generation status
 	if not response.candidates:
-    		raise RuntimeError(
-        	f"No Gemini candidates returned: {response.prompt_feedback}"
-    		)
+            raise RuntimeError(
+            f"No Gemini candidates returned: {response.prompt_feedback}"
+        )
 
 	candidate = response.candidates[0]
 

@@ -62,6 +62,7 @@ def detect_language_endpoint(request: TextRequest):
 
 @app.post("/chat")
 def chat_endpoint(request: TextRequest):
+    print("CHAT ENDPOINT REACHED", flush=True)
     detection = detect_language(request.text)
 
     if detection["error"]:

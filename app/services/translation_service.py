@@ -1,4 +1,5 @@
 from deep_translator import GoogleTranslator
+from deep_translator.exceptions import TooManyRequests, TranslationNotFound
 
 LANGUAGE_CODES = {
     "en": "en",
@@ -9,12 +10,7 @@ LANGUAGE_CODES = {
 }
 
 
-def translate_text(
-    text: str,
-    source_language: str,
-    target_language: str,
-) -> str:
-
+def translate_text(text, source_language, target_language):
     text = text.strip()
 
     if not text:
@@ -26,9 +22,23 @@ def translate_text(
     if target_language not in LANGUAGE_CODES:
         raise ValueError("Unsupported target language.")
 
-    translator = GoogleTranslator(
-        source=LANGUAGE_CODES[source_language],
-        target=LANGUAGE_CODES[target_language],
-    )
+    if source_language == target_language:
+        return text
 
-    return translator.translate(text)
+    try:
+        translator = GoogleTranslator(
+            source=LANGUAGE_CODES[source_language],
+            target=LANGUAGE_CODES[target_language],
+        )
+
+        return translator.translate(text)
+
+    except TooManyRequests as exc:
+        raise RuntimeError(
+            "Translation service is temporarily rate-limited. Please try again later."
+        ) from exc
+
+    except TranslationNotFound as exc:
+        raise RuntimeError(
+            "Translation could not be found."
+        ) from exc

@@ -4,9 +4,6 @@ fastapi
 uvicorn[standard]
 langdetect
 deep-translator
-torch
-transformers
-sentencepiece
 python-dotenv
 google-genai
 requests

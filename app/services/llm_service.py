@@ -32,7 +32,7 @@ def generate_response(user_text: str, language_name: str) -> str:
         raise ValueError("Please use one of the five supported languages.")
 
     api_key = os.getenv("GEMINI_API_KEY")
-    model_name = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
+    model_name = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
 
     if not api_key:
         raise RuntimeError("Gemini API key is missing.")
@@ -46,10 +46,11 @@ def generate_response(user_text: str, language_name: str) -> str:
 
     Rules:
     1. Answer entirely in {language_name}, using its native script.
-    2. Answer the user's actual question directly.
-    3. Provide a complete and informative explanation.
-    4. Use simple language and examples where useful.
-    5. Never return only keywords or an incomplete sentence.
+    2. Keep answers short, clear, and informative.
+    3. Use a maximum of 2-3 short sentences.
+    4. Always complete your sentences.
+    5. Avoid unnecessary introductions and lengthy explanations.
+    6. Include one simple example only when necessary.
     """
 
     try:
@@ -59,7 +60,7 @@ def generate_response(user_text: str, language_name: str) -> str:
             config=types.GenerateContentConfig(
                 system_instruction=system_instruction,
                 temperature=0.4,
-                max_output_tokens=1024,
+                max_output_tokens=1250,
             ),
         )
 

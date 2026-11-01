@@ -1,0 +1,204 @@
+
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background: transparent !important;
+    font-family: Arial, sans-serif;
+}
+
+.keyboard-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Main ChatGPT-style input */
+.prompt-container {
+    width: 100%;
+    background: #191e29;
+    border: 1px solid #343c4d;
+    border-radius: 20px;
+    padding: 10px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: border-color 0.2s ease;
+}
+
+.prompt-container:focus-within {
+    border-color: #71809a;
+}
+
+/* Message textarea */
+#message {
+    display: block;
+    width: 100%;
+    min-height: 20px;
+    max-height: 180px;
+    resize: vertical;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    color: #f4f6fb !important;
+    font-size: 16px;
+    line-height: 1.5;
+    padding: 8px 2px;
+        caret-color: #f4f6fb;
+    outline: none !important;
+    box-shadow: none !important;
+    -webkit-tap-highlight-color: transparent;
+}
+
+#message::placeholder {
+    color: #8994a8;
+}
+#message:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Bottom action row */
+.prompt-actions {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Remove default browser button appearance */
+.prompt-actions button {
+    appearance: none;
+    -webkit-appearance: none;
+    border: none !important;
+    outline: none;
+    box-shadow: none !important;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+/* Keyboard toggle */
+#toggleKeyboard {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #293142 !important;
+    color: #e6eaf2 !important;
+    font-size: 20px;
+}
+
+/* Send button */
+#send {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #e6eaf2 !important;
+    color: #10131a !important;
+    font-size: 24px;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+}
+
+#send:hover {
+    background: #cbd5e1 !important;
+}
+
+#toggleKeyboard:hover {
+    background: #374357 !important;
+}
+
+/* Keyboard panel */
+#keyboardPanel {
+    width: 100%;
+    background: #191e29;
+    border: 1px solid #343c4d;
+    border-radius: 18px;
+    padding: 16px;
+}
+
+.keyboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    color: #f4f6fb;
+}
+
+.keyboard-header h3 {
+    color: #f4f6fb;
+    font-size: 15px;
+}
+
+#language {
+    width: auto;
+    background: #293142;
+    color: #f4f6fb;
+    border: 1px solid #414c60;
+    border-radius: 9px;
+    padding: 9px;
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.actions button {
+    background: #293142;
+    color: #e6eaf2;
+    border: 1px solid #414c60;
+    border-radius: 8px;
+    padding: 9px 13px;
+    cursor: pointer;
+}
+
+#keyboard {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.keyboard-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+.key {
+    min-width: 40px;
+    min-height: 42px;
+    background: #293142;
+    color: #f4f6fb;
+    border: 1px solid #414c60;
+    border-radius: 8px;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.key:hover {
+    background: #414c60;
+}
+
+@media (max-width: 480px) {
+    .keyboard-header {
+        flex-wrap: wrap;
+    }
+
+    .key {
+        min-width: 34px;
+        font-size: 17px;
+    }
+}

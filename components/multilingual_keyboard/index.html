@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Connect CSS -->
+    <link rel="stylesheet" href="./style.css">
+</head>
+
+<body></body>
+<div class="keyboard-container">
+
+    <div class="prompt-container">
+        <textarea
+            id="message"
+            placeholder="Write a message..."
+            rows="3"
+        ></textarea>
+
+        <div class="prompt-actions">
+            <button id="toggleKeyboard" type="button"
+                    title="Toggle keyboard">⌨</button>
+        <button id="send" type="button" title="Send message"> ➤</button>
+        </div>
+    </div>
+
+    <div id="keyboardPanel" style="display:none;">
+
+        <div class="keyboard-header">
+            <h3>Multilingual Keyboard</h3>
+
+            <select id="language">
+                <option value="Tamil">Tamil</option>
+                <option value="Hindi">Hindi</option>
+                <option value="Telugu">Telugu</option>
+                <option value="Malayalam">Malayalam</option>
+            </select>
+        </div>
+
+        <div class="actions">
+            <button id="space" type="button">Space</button>
+            <button id="backspace" type="button">⌫ Delete</button>
+            <button id="clear" type="button">Clear</button>
+        </div>
+
+        <div id="keyboard"></div>
+
+    </div>
+
+</div>
+
+    <script src="./indic-transliterate.js"></script>
+    <script src="https://unpkg.com/streamlit-component-lib@1.4.0/dist/index.js"></script>
+    <script src="./keyboard.js"></script>
+
+</body>
+</html>

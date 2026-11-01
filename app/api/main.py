@@ -7,6 +7,19 @@ from app.services.llm_service import generate_response
 from app.services.translation_service import translate_text
 
 import logging
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:8501",
+        "http://127.0.0.1:8501"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -132,4 +145,4 @@ def translate_endpoint(request: TranslationRequest):
         raise HTTPException(
             status_code=503,
             detail="Translation service is temporarily unavailable. Please try again later."
-        )v
+        )
